@@ -1,22 +1,55 @@
-#include <assert.h>
 #include <iostream>
+#include "checker.h"
+#ifdef UTEST
+#include "checker_test.h"
+#endif //UTEST
+
 using namespace std;
 
-bool batteryIsOk(float temperature, float soc, float chargeRate) {
-  if(temperature < 0 || temperature > 45) {
-    cout << "Temperature out of range!\n";
-    return false;
-  } else if(soc < 20 || soc > 80) {
-    cout << "State of Charge out of range!\n";
-    return false;
-  } else if(chargeRate > 0.8) {
-    cout << "Charge Rate out of range!\n";
+bool InRange(float min, float max, float value){
+  if(value < min || value > max){
     return false;
   }
   return true;
 }
 
+bool InRange(float max, float value){
+  if(value > max){
+    return false;
+  }
+  return true;
+}
+
+bool temperatureCheck(float temperature){
+  bool inRange = InRange(minTemperature, maxTemperature, temperature);
+  if(!inRange) {
+    cout << "Temperature out of range!\n";
+  }
+  return inRange;
+}
+
+bool stateOfChargeCheck(float SOC){
+  bool inRange = InRange(minSOC, maxSOC, SOC);
+  if(!inRange) {
+    cout << "State of Charge out of range!\n";
+  }
+  return inRange;
+}
+
+bool chargeRateCheck(float chargeRate){
+  bool inRange = InRange(maxChargeRate, chargeRate);
+  if(!inRange) {
+    cout << "Charge Rate out of range!\n";
+  }
+  return inRange;
+}
+
+bool batteryOk(float temperature, float soc, float chargeRate) {
+  return temperatureCheck(temperature)&&
+         stateOfChargeCheck(soc)&&
+         chargeRateCheck(chargeRate);
+}
+
 int main() {
-  assert(batteryIsOk(25, 70, 0.7) == true);
-  assert(batteryIsOk(50, 85, 0) == false);
+  runCheckerTests();
 }
