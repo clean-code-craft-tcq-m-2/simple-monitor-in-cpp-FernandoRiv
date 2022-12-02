@@ -1,55 +1,70 @@
-#include <iostream>
 #include "checker.h"
 #ifdef UTEST
 #include "checker_test.h"
 #endif //UTEST
 
 using namespace std;
+using namespace BMSVariables;
 
-bool InRange(float min, float max, float value){
-  if(value < min || value > max){
-    return false;
+bool InMaxRange(float max, variable &value){
+  if(max<value.presentValue){
+    value.status = variableStatus::High;
   }
-  return true;
+  else{
+    value.status = variableStatus::Normal;
+  }
+  return value.status == variableStatus::Normal;;
 }
 
-bool InRange(float max, float value){
-  if(value > max){
-    return false;
+bool InRange(float min, float max, variable &value){
+  if(InMaxRange(max, value)){
+    if(min>value.presentValue){
+      value.status = variableStatus::Low;
+    }
   }
-  return true;
+  return value.status == variableStatus::Normal;
 }
 
-bool temperatureCheck(float temperature){
-  bool inRange = InRange(minTemperature, maxTemperature, temperature);
+void promptFaultStatus(const variable &value){
+  if(value.status != variableStatus::Normal){
+    printf("%s %s (%f)\n", value.ID.c_str(), 
+      (value.status==variableStatus::High)?"High":"Low", 
+       value.presentValue);
+  }
+}
+
+bool IsTemperatureOk(Temperature &temp){
+  bool inRange = InRange(minTemperature, maxTemperature, temp);
   if(!inRange) {
-    cout << "Temperature out of range!\n";
+    promptFaultStatus(temp);
   }
   return inRange;
 }
 
-bool stateOfChargeCheck(float SOC){
-  bool inRange = InRange(minSOC, maxSOC, SOC);
+bool IsStateOfChargeOk(StateOfCharge &soc){
+  bool inRange = InRange(minSOC, maxSOC, soc);
   if(!inRange) {
-    cout << "State of Charge out of range!\n";
+    promptFaultStatus(soc);
   }
   return inRange;
 }
 
-bool chargeRateCheck(float chargeRate){
-  bool inRange = InRange(maxChargeRate, chargeRate);
+bool IsChargeRateOk(ChargeRate &cRate){
+  bool inRange = InMaxRange(maxChargeRate, cRate);
   if(!inRange) {
-    cout << "Charge Rate out of range!\n";
+    promptFaultStatus(cRate);
   }
   return inRange;
 }
 
-bool batteryOk(float temperature, float soc, float chargeRate) {
-  return temperatureCheck(temperature)&&
-         stateOfChargeCheck(soc)&&
-         chargeRateCheck(chargeRate);
+bool IsBatteryOk(Temperature &temp, StateOfCharge &soc, ChargeRate &cRate) {
+  return IsTemperatureOk(temp)&&
+         IsStateOfChargeOk(soc)&&
+         IsChargeRateOk(cRate);
 }
 
 int main() {
+  #ifdef UTEST
   runCheckerTests();
+  #endif //UTEST
 }
