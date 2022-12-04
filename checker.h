@@ -3,36 +3,63 @@
 
 #include <iostream>
 
-static const float minTemperature = 0.0;
-static const float maxTemperature = 45.0;
-static const float maxChargeRate  = 0.8;
-static const float minSOC = 20.0;
-static const float maxSOC = 80.0;
+extern const float minTemperature;
+extern const float maxTemperature;
+extern const float maxChargeRate;
+extern const float minSOC;
+extern const float maxSOC;
+extern const float tempTolerancePercent;
+extern const float socTolerancePercent;
+extern const float cRateTolerancePercent;
 
 namespace BMSVariables{
   enum class variableStatus : char{
     Normal = 0,
+    LowWarn,
     Low,
+    HighWarn,
     High
+  };
+
+  enum class languageIDs : char{
+    English = 0,
+    German,
+    Spanish
   };
 
   class variable{
     public:
 
     variable();
-    variable(const std::string id):
-      ID{id}{};
+    variable(const std::string id = "Unknown",
+             float lowThreshhold  = 0.0,
+             float highThreshhold = 0.0,
+             float warnThreshPercent = 0.0):
+      m_ID{id},
+      m_lowThreshhold{lowThreshhold},
+      m_highThreshhold{highThreshhold},
+      m_warnThreshholdRatio{warnThreshPercent}
+      {
+        m_warnThreshholdRatio = m_warnThreshholdRatio/100;
+      };
 
     ~variable(){};
 
-    std::string ID = "Undefined";
-    float presentValue = 0.0;
+    bool setLanguage(languageIDs targetlang);
+
+    std::string m_ID;
+    languageIDs m_LanguageID = languageIDs::English;
     variableStatus status = variableStatus::Normal;
+    float m_presentValue;
+    float m_lowThreshhold;
+    float m_highThreshhold;
+    float m_warnThreshholdRatio;
   };
 
   class Temperature : public virtual variable{
     public:
-    Temperature():variable("Temperature"){};
+    Temperature():variable("Temperature", minTemperature,
+                           maxTemperature, tempTolerancePercent){};
   };
 
   class StateOfCharge : public virtual variable{
@@ -49,8 +76,8 @@ namespace BMSVariables{
 bool IsTemperatureOk(BMSVariables::Temperature&);
 bool IsStateOfChargeOk(BMSVariables::StateOfCharge&);
 bool IsChargeRateOk(BMSVariables::ChargeRate&);
-bool IsBatteryOk(BMSVariables::Temperature&, 
-                 BMSVariables::StateOfCharge&, 
+bool IsBatteryOk(BMSVariables::Temperature&,
+                 BMSVariables::StateOfCharge&,
                  BMSVariables::ChargeRate&);
 
 #endif  //_CHECKER_H_

@@ -7,54 +7,76 @@ using namespace BMSVariables;
 
 void temperatureCheck_test(){
   cout<< "Temperature Check tests: START" <<endl;
-  
-  // Minimum temperature check
+
+  // Minimum temperature allowed
   Temperature temp;
-  temp.presentValue = minTemperature;
+  temp.m_presentValue = minTemperature;
   assert(IsTemperatureOk(temp) == true);
   assert(temp.status == variableStatus::Normal);
 
-  // Maximum temperature check
-  temp.presentValue = maxTemperature;
+  // Maximum temperature allowed
+  temp.m_presentValue = maxTemperature;
   assert(IsTemperatureOk(temp) == true);
   assert(temp.status == variableStatus::Normal);
 
-  // Low temperature check
-  temp.presentValue = minTemperature - 0.1;
+  // Low temperature error
+  temp.m_presentValue = minTemperature - 0.1;
   assert(IsTemperatureOk(temp) == false);
   assert(temp.status == variableStatus::Low);
 
-  // High temperature check
-  temp.presentValue = maxTemperature + 0.1;
+  // High temperature error
+  temp.m_presentValue = maxTemperature + 0.1;
   assert(IsTemperatureOk(temp) == false);
   assert(temp.status == variableStatus::High);
+
+  // Low temperature warning
+  temp.m_presentValue = minTemperature + maxTemperature*\
+                        temp.m_warnThreshholdRatio;
+  assert(IsTemperatureOk(temp) == true);
+  assert(temp.status == variableStatus::LowWarn);
+
+  // High temperature warning
+  temp.m_presentValue = maxTemperature - maxTemperature*\
+                        temp.m_warnThreshholdRatio;
+  assert(IsTemperatureOk(temp) == true);
+  assert(temp.status == variableStatus::HighWarn);
 
   cout<< "Temperature Check tests: END, success!" <<endl;
 }
 
 void stateOfChargeCheck_test(){
   cout<< "State of charge Check tests: START" <<endl;
-  
-  // Minimum soc check
+
+  // Minimum soc allowed
   StateOfCharge soc;
-  soc.presentValue = minSOC;
+  soc.m_presentValue = minSOC;
   assert(IsStateOfChargeOk(soc) == true);
   assert(soc.status == variableStatus::Normal);
 
-  // Maximum soc check
-  soc.presentValue = maxSOC;
+  // Maximum soc allowed
+  soc.m_presentValue = maxSOC;
   assert(IsStateOfChargeOk(soc) == true);
   assert(soc.status == variableStatus::Normal);
 
-  // Low soc check
-  soc.presentValue = minSOC - 0.1;
+  // Low soc error
+  soc.m_presentValue = minSOC - 0.1;
   assert(IsStateOfChargeOk(soc) == false);
   assert(soc.status == variableStatus::Low);
-  
-  // High soc check
-  soc.presentValue = maxSOC + 0.1;
+
+  // High soc error
+  soc.m_presentValue = maxSOC + 0.1;
   assert(IsStateOfChargeOk(soc) == false);
   assert(soc.status == variableStatus::High);
+
+  // Low soc warning
+  soc.m_presentValue = minSOC + maxSOC*soc.m_warnThreshholdRatio;
+  assert(IsStateOfChargeOk(soc) == true);
+  assert(soc.status == variableStatus::LowWarn);
+
+  // High soc warning
+  soc.m_presentValue = maxSOC - maxSOC*soc.m_warnThreshholdRatio;
+  assert(IsStateOfChargeOk(soc) == true);
+  assert(soc.status == variableStatus::HighWarn);
 
   cout<< "State of charge Check tests: END, success!" <<endl;
 }
@@ -64,19 +86,25 @@ void chargeRateCheck_test(){
 
   // Normal charge rate
   ChargeRate cRate;
-  cRate.presentValue = maxChargeRate;
+  cRate.m_presentValue = maxChargeRate;
   assert(IsChargeRateOk(cRate) == true);
   assert(cRate.status == variableStatus::Normal);
 
-  // Low charge rate
-  cRate.presentValue = maxChargeRate - 0.1;
+  // Low charge rate error
+  cRate.m_presentValue = maxChargeRate - 0.1;
   assert(IsChargeRateOk(cRate) == true);
   assert(cRate.status == variableStatus::Normal);
 
-  // High charge rate
-  cRate.presentValue = maxChargeRate + 0.1;
+  // High charge rate error
+  cRate.m_presentValue = maxChargeRate + 0.1;
   assert(IsChargeRateOk(cRate) == false);
   assert(cRate.status == variableStatus::High);
+
+  // High charge rate warning
+  cRate.m_presentValue = maxChargeRate - maxChargeRate*\
+                         cRate.m_warnThreshholdRatio;
+  assert(IsChargeRateOk(cRate) == true);
+  assert(cRate.status == variableStatus::HighWarn);
 
   cout<< "Charge Rate Check tests: END, success!" <<endl;
 }
@@ -86,25 +114,25 @@ void batteryOk_test(){
 
   // Battery OK scenario
   Temperature temp;
-  temp.presentValue = minTemperature;
+  temp.m_presentValue = minTemperature;
   StateOfCharge soc;
-  soc.presentValue = minSOC;
+  soc.m_presentValue = minSOC;
   ChargeRate cRate;
-  cRate.presentValue = maxChargeRate;
+  cRate.m_presentValue = maxChargeRate;
   assert(IsBatteryOk(temp, soc, cRate) == true);
 
   // Wrong Temperature scenario
-  temp.presentValue--;
+  temp.m_presentValue--;
   assert(IsBatteryOk(temp, soc, cRate) == false);
 
   // Wrong SOC scenario
-  temp.presentValue++;
-  soc.presentValue--;
+  temp.m_presentValue++;
+  soc.m_presentValue--;
   assert(IsBatteryOk(temp, soc, cRate) == false);
 
   // Wrong Charte Rate scenario
-  soc.presentValue++;
-  cRate.presentValue++;
+  soc.m_presentValue++;
+  cRate.m_presentValue++;
   assert(IsBatteryOk(temp, soc, cRate) == false);
 
   cout<< "Battery tests: END, success!" <<endl;

@@ -7,7 +7,7 @@ using namespace std;
 using namespace BMSVariables;
 
 bool InMaxRange(float max, variable &value){
-  if(max<value.presentValue){
+  if(max<value.m_presentValue){
     value.status = variableStatus::High;
   }
   else{
@@ -18,7 +18,7 @@ bool InMaxRange(float max, variable &value){
 
 bool InRange(float min, float max, variable &value){
   if(InMaxRange(max, value)){
-    if(min>value.presentValue){
+    if(min>value.m_presentValue){
       value.status = variableStatus::Low;
     }
   }
@@ -27,9 +27,9 @@ bool InRange(float min, float max, variable &value){
 
 void promptFaultStatus(const variable &value){
   if(value.status != variableStatus::Normal){
-    printf("%s %s (%f)\n", value.ID.c_str(), 
-      (value.status==variableStatus::High)?"High":"Low", 
-       value.presentValue);
+    printf("%s %s (%f)\n", value.m_ID.c_str(),
+      (value.status==variableStatus::High)?"High":"Low",
+       value.m_presentValue);
   }
 }
 
