@@ -2,7 +2,7 @@
 #define _CHECKER_CONSTANTS_H_
 
 #include <string>
-#include <map>
+#include <unordered_map>
 
 namespace BMSVariables{
   //===== Types =====
@@ -33,8 +33,8 @@ namespace BMSVariables{
     UNKNOWN
   };
 
-  typedef std::map<languageID, std::string> languageIndexer;
-  typedef std::map<stringID, languageIndexer> stringIndexer;
+  typedef std::unordered_map<languageID, std::string> languageIndexer;
+  typedef std::unordered_map<stringID, languageIndexer> stringIndexer;
 }
 
 #endif // _CHECKER_CONSTANTS_H_

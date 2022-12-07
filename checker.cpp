@@ -43,7 +43,7 @@ bool variable::InRange(){
 }
 
 stringID getStatusHighLowString(variableStatus status){
-  stringID retVal;
+  stringID retVal = stringID::UNKNOWN;
   switch (status){
     case variableStatus::Normal:
       retVal = stringID::NORMAL;
@@ -63,7 +63,7 @@ stringID getStatusHighLowString(variableStatus status){
 }
 
 stringID getStatusNotificationString(variableStatus status){
-  stringID retVal;
+  stringID retVal = stringID::UNKNOWN;
   switch (status){
     case variableStatus::Normal:
       retVal = stringID::NORMAL;
@@ -83,19 +83,7 @@ stringID getStatusNotificationString(variableStatus status){
 }
 
 std::string getString(stringID str){
-  stringIndexer::const_iterator strIdx;
-  languageIndexer::const_iterator lngIdx;
-  for(strIdx = strIndexer.begin(); strIdx != strIndexer.end(); ++strIdx){
-    if(strIdx->first==str){
-      for(lngIdx = strIdx->second.begin(); lngIdx != strIdx->second.end();\
-          ++lngIdx){
-        if(lngIdx->first==currentLanguage){
-          return lngIdx->second;
-        }
-      }
-    }
-  }
-  return "Invalid stringID";
+  return strIndexer.at(str).at(currentLanguage);
 }
 
 void faultStatusFormat(char* buffer, const variable &value){
