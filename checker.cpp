@@ -44,41 +44,33 @@ bool variable::InRange(){
 
 stringID getStatusHighLowString(variableStatus status){
   stringID retVal = stringID::UNKNOWN;
-  switch (status){
-    case variableStatus::Normal:
-      retVal = stringID::NORMAL;
-      break;
-    case variableStatus::Low:
-    case variableStatus::LowWarn:
-      retVal = stringID::LOW;
-      break;
-    case variableStatus::High:
-    case variableStatus::HighWarn:
-      retVal = stringID::HIGH;
-      break;
-    default:
-      break;
-  };
+  if(variableStatus::Normal == status){
+    retVal = stringID::NORMAL;
+  }
+  else if(variableStatus::High     == status ||
+          variableStatus::HighWarn == status){
+    retVal = stringID::HIGH;
+  }
+  else if(variableStatus::Low     == status ||
+          variableStatus::LowWarn == status){
+    retVal = stringID::LOW;
+  }
   return retVal;
 }
 
 stringID getStatusNotificationString(variableStatus status){
   stringID retVal = stringID::UNKNOWN;
-  switch (status){
-    case variableStatus::Normal:
-      retVal = stringID::NORMAL;
-      break;
-    case variableStatus::HighWarn:
-    case variableStatus::LowWarn:
-      retVal = stringID::WARNING;
-      break;
-    case variableStatus::High:
-    case variableStatus::Low:
-      retVal = stringID::ERROR;
-      break;
-    default:
-      break;
-  };
+  if(variableStatus::Normal == status){
+    retVal = stringID::NORMAL;
+  }
+  else if(variableStatus::HighWarn == status ||
+          variableStatus::LowWarn  == status){
+    retVal = stringID::WARNING;
+  }
+  else if(variableStatus::High == status ||
+          variableStatus::Low  == status){
+    retVal = stringID::ERROR;
+  }
   return retVal;
 }
 
