@@ -42,35 +42,48 @@ bool variable::InRange(){
   return (InMaxRange() && InMinRange());
 }
 
+void setStringIfNormal(stringID &retVal, variableStatus status){
+  if(variableStatus::Normal == status)
+    retVal = stringID::NORMAL;
+}
+
+void setStringIfHigh(stringID &retVal, variableStatus status){
+  if(variableStatus::High     == status ||
+     variableStatus::HighWarn == status)
+    retVal = stringID::HIGH;
+}
+
+void setStringIfLow(stringID &retVal, variableStatus status){
+  if(variableStatus::Low     == status ||
+     variableStatus::LowWarn == status)
+    retVal = stringID::LOW;
+}
+
+void setStringIfError(stringID &retVal, variableStatus status){
+  if(variableStatus::High == status ||
+     variableStatus::Low  == status)
+    retVal = stringID::ERROR;
+}
+
+void setStringIfWarning(stringID &retVal, variableStatus status){
+  if(variableStatus::HighWarn == status ||
+     variableStatus::LowWarn  == status)
+    retVal = stringID::WARNING;
+}
+
 stringID getStatusHighLowString(variableStatus status){
   stringID retVal = stringID::UNKNOWN;
-  if(variableStatus::Normal == status){
-    retVal = stringID::NORMAL;
-  }
-  else if(variableStatus::High     == status ||
-          variableStatus::HighWarn == status){
-    retVal = stringID::HIGH;
-  }
-  else if(variableStatus::Low     == status ||
-          variableStatus::LowWarn == status){
-    retVal = stringID::LOW;
-  }
+  setStringIfNormal(retVal, status);
+  setStringIfHigh(retVal, status);
+  setStringIfLow(retVal, status);
   return retVal;
 }
 
 stringID getStatusNotificationString(variableStatus status){
   stringID retVal = stringID::UNKNOWN;
-  if(variableStatus::Normal == status){
-    retVal = stringID::NORMAL;
-  }
-  else if(variableStatus::HighWarn == status ||
-          variableStatus::LowWarn  == status){
-    retVal = stringID::WARNING;
-  }
-  else if(variableStatus::High == status ||
-          variableStatus::Low  == status){
-    retVal = stringID::ERROR;
-  }
+  setStringIfNormal(retVal, status);
+  setStringIfError(retVal, status);
+  setStringIfWarning(retVal, status);
   return retVal;
 }
 
