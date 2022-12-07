@@ -6,35 +6,117 @@
 using namespace std;
 using namespace BMSVariables;
 
-bool InMaxRange(float max, variable &value){
-  if(max<value.m_presentValue){
-    value.status = variableStatus::High;
+// Language environment variable
+languageID currentLanguage = languageID::English;
+
+bool variable::InMaxRange(){
+  if(m_highThreshhold<m_presentValue){
+    m_status = variableStatus::High;
+  }
+  else if((m_highThreshhold-m_warnThreshholdTolerance)<=\
+            m_presentValue){
+    m_status = variableStatus::HighWarn;
   }
   else{
-    value.status = variableStatus::Normal;
+    m_status = variableStatus::Normal;
   }
-  return value.status == variableStatus::Normal;;
+  return m_status == variableStatus::Normal;
 }
 
-bool InRange(float min, float max, variable &value){
-  if(InMaxRange(max, value)){
-    if(min>value.m_presentValue){
-      value.status = variableStatus::Low;
+bool variable::InMinRange(){
+  if(m_lowThreshhold>m_presentValue){
+    m_status = variableStatus::Low;
+  }
+  else if((m_lowThreshhold + m_warnThreshholdTolerance)>=\
+            m_presentValue){
+    m_status = variableStatus::LowWarn;
+  }
+  else{
+    // Normal assignment handled in Max range evalation
+    // hence, do nothing
+  }
+  return m_status == variableStatus::Normal;
+}
+
+bool variable::InRange(){
+  return (InMaxRange() && InMinRange());
+}
+
+stringID getStatusHighLowString(variableStatus status){
+  stringID retVal;
+  switch (status){
+    case variableStatus::Normal:
+      retVal = stringID::NORMAL;
+      break;
+    case variableStatus::Low:
+    case variableStatus::LowWarn:
+      retVal = stringID::LOW;
+      break;
+    case variableStatus::High:
+    case variableStatus::HighWarn:
+      retVal = stringID::HIGH;
+      break;
+    default:
+      break;
+  };
+  return retVal;
+}
+
+stringID getStatusNotificationString(variableStatus status){
+  stringID retVal;
+  switch (status){
+    case variableStatus::Normal:
+      retVal = stringID::NORMAL;
+      break;
+    case variableStatus::HighWarn:
+    case variableStatus::LowWarn:
+      retVal = stringID::WARNING;
+      break;
+    case variableStatus::High:
+    case variableStatus::Low:
+      retVal = stringID::ERROR;
+      break;
+    default:
+      break;
+  };
+  return retVal;
+}
+
+std::string getString(stringID str){
+  stringIndexer::const_iterator strIdx;
+  languageIndexer::const_iterator lngIdx;
+  for(strIdx = strIndexer.begin(); strIdx != strIndexer.end(); ++strIdx){
+    if(strIdx->first==str){
+      for(lngIdx = strIdx->second.begin(); lngIdx != strIdx->second.end();\
+          ++lngIdx){
+        if(lngIdx->first==currentLanguage){
+          return lngIdx->second;
+        }
+      }
     }
   }
-  return value.status == variableStatus::Normal;
+  return "Invalid stringID";
+}
+
+void faultStatusFormat(char* buffer, const variable &value){
+  if(value.m_status != variableStatus::Normal){
+    // e.g. Breach, Temperature: High (something)
+    sprintf(buffer, "%s, %s: %s (%f)\n",
+            getString(getStatusNotificationString(value.m_status)).c_str(),
+            getString(value.m_ID).c_str(),
+            getString(getStatusHighLowString(value.m_status)).c_str(),
+            value.m_presentValue);
+  }
 }
 
 void promptFaultStatus(const variable &value){
-  if(value.status != variableStatus::Normal){
-    printf("%s %s (%f)\n", value.m_ID.c_str(),
-      (value.status==variableStatus::High)?"High":"Low",
-       value.m_presentValue);
-  }
+  char buffer[100];
+  faultStatusFormat(buffer, value);
+  printf("%s", buffer);
 }
 
 bool IsTemperatureOk(Temperature &temp){
-  bool inRange = InRange(minTemperature, maxTemperature, temp);
+  bool inRange = temp.InRange();
   if(!inRange) {
     promptFaultStatus(temp);
   }
@@ -42,7 +124,7 @@ bool IsTemperatureOk(Temperature &temp){
 }
 
 bool IsStateOfChargeOk(StateOfCharge &soc){
-  bool inRange = InRange(minSOC, maxSOC, soc);
+  bool inRange = soc.InRange();
   if(!inRange) {
     promptFaultStatus(soc);
   }
@@ -50,7 +132,7 @@ bool IsStateOfChargeOk(StateOfCharge &soc){
 }
 
 bool IsChargeRateOk(ChargeRate &cRate){
-  bool inRange = InMaxRange(maxChargeRate, cRate);
+  bool inRange = cRate.InMaxRange();
   if(!inRange) {
     promptFaultStatus(cRate);
   }

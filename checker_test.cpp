@@ -6,79 +6,77 @@ using namespace std;
 using namespace BMSVariables;
 
 void temperatureCheck_test(){
-  cout<< "Temperature Check tests: START" <<endl;
+  cout<< "Temperature tests: START" <<endl;
 
-  // Minimum temperature allowed
+  // Minimum normal temperature allowed
   Temperature temp;
-  temp.m_presentValue = minTemperature;
+  temp.m_presentValue = minTemperature + temp.m_warnThreshholdTolerance + 0.1;
   assert(IsTemperatureOk(temp) == true);
-  assert(temp.status == variableStatus::Normal);
+  assert(temp.m_status == variableStatus::Normal);
 
-  // Maximum temperature allowed
-  temp.m_presentValue = maxTemperature;
+  // Maximum normal temperature allowed
+  temp.m_presentValue = maxTemperature - temp.m_warnThreshholdTolerance - 0.1;
   assert(IsTemperatureOk(temp) == true);
-  assert(temp.status == variableStatus::Normal);
+  assert(temp.m_status == variableStatus::Normal);
 
   // Low temperature error
   temp.m_presentValue = minTemperature - 0.1;
   assert(IsTemperatureOk(temp) == false);
-  assert(temp.status == variableStatus::Low);
+  assert(temp.m_status == variableStatus::Low);
 
   // High temperature error
   temp.m_presentValue = maxTemperature + 0.1;
   assert(IsTemperatureOk(temp) == false);
-  assert(temp.status == variableStatus::High);
+  assert(temp.m_status == variableStatus::High);
 
   // Low temperature warning
-  temp.m_presentValue = minTemperature + maxTemperature*\
-                        temp.m_warnThreshholdRatio;
-  assert(IsTemperatureOk(temp) == true);
-  assert(temp.status == variableStatus::LowWarn);
+  temp.m_presentValue = minTemperature + temp.m_warnThreshholdTolerance;
+  assert(IsTemperatureOk(temp) == false);
+  assert(temp.m_status == variableStatus::LowWarn);
 
   // High temperature warning
-  temp.m_presentValue = maxTemperature - maxTemperature*\
-                        temp.m_warnThreshholdRatio;
-  assert(IsTemperatureOk(temp) == true);
-  assert(temp.status == variableStatus::HighWarn);
+  temp.m_presentValue = maxTemperature - temp.m_warnThreshholdTolerance;
+  assert(IsTemperatureOk(temp) == false);
+  assert(temp.m_status == variableStatus::HighWarn);
 
-  cout<< "Temperature Check tests: END, success!" <<endl;
+  cout<< "Temperature Check tests: END, success!" <<endl<<endl;
 }
 
 void stateOfChargeCheck_test(){
-  cout<< "State of charge Check tests: START" <<endl;
+  cout<< "State of Charge tests: START" <<endl;
 
-  // Minimum soc allowed
+  // Minimum normal soc allowed
   StateOfCharge soc;
-  soc.m_presentValue = minSOC;
+  soc.m_presentValue = minSOC + soc.m_warnThreshholdTolerance + 0.1;
   assert(IsStateOfChargeOk(soc) == true);
-  assert(soc.status == variableStatus::Normal);
+  assert(soc.m_status == variableStatus::Normal);
 
-  // Maximum soc allowed
-  soc.m_presentValue = maxSOC;
+  // Maximum normal soc allowed
+  soc.m_presentValue = maxSOC - soc.m_warnThreshholdTolerance - 0.1;
   assert(IsStateOfChargeOk(soc) == true);
-  assert(soc.status == variableStatus::Normal);
+  assert(soc.m_status == variableStatus::Normal);
 
   // Low soc error
   soc.m_presentValue = minSOC - 0.1;
   assert(IsStateOfChargeOk(soc) == false);
-  assert(soc.status == variableStatus::Low);
+  assert(soc.m_status == variableStatus::Low);
 
   // High soc error
   soc.m_presentValue = maxSOC + 0.1;
   assert(IsStateOfChargeOk(soc) == false);
-  assert(soc.status == variableStatus::High);
+  assert(soc.m_status == variableStatus::High);
 
   // Low soc warning
-  soc.m_presentValue = minSOC + maxSOC*soc.m_warnThreshholdRatio;
-  assert(IsStateOfChargeOk(soc) == true);
-  assert(soc.status == variableStatus::LowWarn);
+  soc.m_presentValue = minSOC + soc.m_warnThreshholdTolerance;
+  assert(IsStateOfChargeOk(soc) == false);
+  assert(soc.m_status == variableStatus::LowWarn);
 
   // High soc warning
-  soc.m_presentValue = maxSOC - maxSOC*soc.m_warnThreshholdRatio;
-  assert(IsStateOfChargeOk(soc) == true);
-  assert(soc.status == variableStatus::HighWarn);
+  soc.m_presentValue = maxSOC - soc.m_warnThreshholdTolerance;
+  assert(IsStateOfChargeOk(soc) == false);
+  assert(soc.m_status == variableStatus::HighWarn);
 
-  cout<< "State of charge Check tests: END, success!" <<endl;
+  cout<< "State of Charge tests: END, success!" <<endl<<endl;
 }
 
 void chargeRateCheck_test(){
@@ -86,27 +84,74 @@ void chargeRateCheck_test(){
 
   // Normal charge rate
   ChargeRate cRate;
-  cRate.m_presentValue = maxChargeRate;
+  cRate.m_presentValue = maxChargeRate - cRate.m_warnThreshholdTolerance - 0.1;
   assert(IsChargeRateOk(cRate) == true);
-  assert(cRate.status == variableStatus::Normal);
-
-  // Low charge rate error
-  cRate.m_presentValue = maxChargeRate - 0.1;
-  assert(IsChargeRateOk(cRate) == true);
-  assert(cRate.status == variableStatus::Normal);
+  assert(cRate.m_status == variableStatus::Normal);
 
   // High charge rate error
-  cRate.m_presentValue = maxChargeRate + 0.1;
+  cRate.m_presentValue = maxChargeRate + maxChargeRate/100;
   assert(IsChargeRateOk(cRate) == false);
-  assert(cRate.status == variableStatus::High);
+  assert(cRate.m_status == variableStatus::High);
 
   // High charge rate warning
-  cRate.m_presentValue = maxChargeRate - maxChargeRate*\
-                         cRate.m_warnThreshholdRatio;
-  assert(IsChargeRateOk(cRate) == true);
-  assert(cRate.status == variableStatus::HighWarn);
+  cRate.m_presentValue = maxChargeRate - cRate.m_warnThreshholdTolerance\
+                         + maxChargeRate/100;
+  assert(IsChargeRateOk(cRate) == false);
+  assert(cRate.m_status == variableStatus::HighWarn);
 
-  cout<< "Charge Rate Check tests: END, success!" <<endl;
+  cout<< "Charge Rate Check tests: END, success!" <<endl<<endl;
+}
+
+void prompt_test(){
+  cout<< "Prompt tests: START" <<endl;
+
+  char buffer[100];
+  Temperature temp;
+  temp.m_status = variableStatus::High;
+  faultStatusFormat(buffer, temp);
+  string evaluatedPrompt = string(buffer);
+  assert(evaluatedPrompt.find(getString(stringID::TEMPERATURE))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::ERROR))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::HIGH))!=string::npos);
+
+  temp.m_status = variableStatus::Low;
+  faultStatusFormat(buffer, temp);
+  evaluatedPrompt = string(buffer);
+  assert(evaluatedPrompt.find(getString(stringID::TEMPERATURE))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::ERROR))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::LOW))!=string::npos);
+
+  temp.m_status = variableStatus::HighWarn;
+  faultStatusFormat(buffer, temp);
+  evaluatedPrompt = string(buffer);
+  assert(evaluatedPrompt.find(getString(stringID::TEMPERATURE))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::WARNING))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::HIGH))!=string::npos);
+
+  temp.m_status = variableStatus::LowWarn;
+  faultStatusFormat(buffer, temp);
+  evaluatedPrompt = string(buffer);
+  assert(evaluatedPrompt.find(getString(stringID::TEMPERATURE))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::WARNING))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::LOW))!=string::npos);
+
+  StateOfCharge soc;
+  soc.m_status = variableStatus::LowWarn;
+  faultStatusFormat(buffer, soc);
+  evaluatedPrompt = string(buffer);
+  assert(evaluatedPrompt.find(getString(stringID::SOC))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::WARNING))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::LOW))!=string::npos);
+
+  ChargeRate cRate;
+  cRate.m_status = variableStatus::High;
+  faultStatusFormat(buffer, cRate);
+  evaluatedPrompt = string(buffer);
+  assert(evaluatedPrompt.find(getString(stringID::CHARGERATE))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::ERROR))!=string::npos);
+  assert(evaluatedPrompt.find(getString(stringID::HIGH))!=string::npos);
+
+  cout<< "Prompt tests: END, success!" <<endl<<endl;
 }
 
 void batteryOk_test(){
@@ -114,11 +159,11 @@ void batteryOk_test(){
 
   // Battery OK scenario
   Temperature temp;
-  temp.m_presentValue = minTemperature;
+  temp.m_presentValue = minTemperature + temp.m_warnThreshholdTolerance + 0.1;
   StateOfCharge soc;
-  soc.m_presentValue = minSOC;
+  soc.m_presentValue = minSOC + soc.m_warnThreshholdTolerance + 0.1;
   ChargeRate cRate;
-  cRate.m_presentValue = maxChargeRate;
+  cRate.m_presentValue = maxChargeRate - 0.1;
   assert(IsBatteryOk(temp, soc, cRate) == true);
 
   // Wrong Temperature scenario
@@ -130,12 +175,12 @@ void batteryOk_test(){
   soc.m_presentValue--;
   assert(IsBatteryOk(temp, soc, cRate) == false);
 
-  // Wrong Charte Rate scenario
+  // Wrong Charge Rate scenario
   soc.m_presentValue++;
   cRate.m_presentValue++;
   assert(IsBatteryOk(temp, soc, cRate) == false);
 
-  cout<< "Battery tests: END, success!" <<endl;
+  cout<< "Battery tests: END, success!" <<endl<<endl;
 }
 
 void runCheckerTests(){
@@ -143,4 +188,5 @@ void runCheckerTests(){
   stateOfChargeCheck_test();
   chargeRateCheck_test();
   batteryOk_test();
+  prompt_test();
 }

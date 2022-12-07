@@ -2,74 +2,66 @@
 #define _CHECKER_H_
 
 #include <iostream>
-
-extern const float minTemperature;
-extern const float maxTemperature;
-extern const float maxChargeRate;
-extern const float minSOC;
-extern const float maxSOC;
-extern const float tempTolerancePercent;
-extern const float socTolerancePercent;
-extern const float cRateTolerancePercent;
+#include "checkerTypes.h"
 
 namespace BMSVariables{
-  enum class variableStatus : char{
-    Normal = 0,
-    LowWarn,
-    Low,
-    HighWarn,
-    High
-  };
-
-  enum class languageIDs : char{
-    English = 0,
-    German,
-    Spanish
-  };
+  extern const float minTemperature;
+  extern const float maxTemperature;
+  extern const float maxChargeRate;
+  extern const float minSOC;
+  extern const float maxSOC;
+  extern const float tempTolerancePercent;
+  extern const float socTolerancePercent;
+  extern const float cRateTolerancePercent;
+  extern const stringIndexer strIndexer;
 
   class variable{
     public:
 
     variable();
-    variable(const std::string id = "Unknown",
+    variable(const stringID id = stringID::UNKNOWN,
              float lowThreshhold  = 0.0,
              float highThreshhold = 0.0,
              float warnThreshPercent = 0.0):
       m_ID{id},
       m_lowThreshhold{lowThreshhold},
       m_highThreshhold{highThreshhold},
-      m_warnThreshholdRatio{warnThreshPercent}
+      m_warnThreshholdTolerance{warnThreshPercent}
       {
-        m_warnThreshholdRatio = m_warnThreshholdRatio/100;
+        m_warnThreshholdTolerance = m_highThreshhold*\
+                                    m_warnThreshholdTolerance/100;
       };
 
     ~variable(){};
 
-    bool setLanguage(languageIDs targetlang);
+    bool InMaxRange();
+    bool InMinRange();
+    bool InRange();
 
-    std::string m_ID;
-    languageIDs m_LanguageID = languageIDs::English;
-    variableStatus status = variableStatus::Normal;
-    float m_presentValue;
+    stringID m_ID;
+    variableStatus m_status = variableStatus::Normal;
+    float m_presentValue = 0.0;
     float m_lowThreshhold;
     float m_highThreshhold;
-    float m_warnThreshholdRatio;
+    float m_warnThreshholdTolerance;
   };
 
   class Temperature : public virtual variable{
     public:
-    Temperature():variable("Temperature", minTemperature,
+    Temperature():variable(stringID::TEMPERATURE, minTemperature,
                            maxTemperature, tempTolerancePercent){};
   };
 
   class StateOfCharge : public virtual variable{
     public:
-    StateOfCharge():variable("State of Charge"){};
+    StateOfCharge():variable(stringID::SOC, minSOC, maxSOC,
+                             socTolerancePercent){};
   };
 
   class ChargeRate : public virtual variable{
     public:
-    ChargeRate():variable("Charge Rate"){};
+    ChargeRate():variable(stringID::CHARGERATE, 0.0, maxChargeRate,
+                          cRateTolerancePercent){};
   };
 }
 
@@ -79,5 +71,10 @@ bool IsChargeRateOk(BMSVariables::ChargeRate&);
 bool IsBatteryOk(BMSVariables::Temperature&,
                  BMSVariables::StateOfCharge&,
                  BMSVariables::ChargeRate&);
+
+#ifdef UTEST
+void faultStatusFormat(char* buffer, const BMSVariables::variable &value);
+std::string getString(BMSVariables::stringID str);
+#endif
 
 #endif  //_CHECKER_H_
